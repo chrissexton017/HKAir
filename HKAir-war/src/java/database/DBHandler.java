@@ -33,6 +33,42 @@ public abstract class DBHandler {
         }
     }
     
+    public static String getAirportList() {
+        JSONArray jsonArr = new JSONArray();
+        String query = "SELECT * FROM hk_air.airport;";
+        try {
+            Statement st = c.createStatement();
+            ResultSet rs = st.executeQuery(query);
+            //jsonArr = convert(rs);
+            while(rs.next()) {
+                JSONObject obj = new JSONObject();
+                obj.put("value", rs.getString("iata_code"));
+                obj.put("label", rs.getString("city")+" ("+rs.getString("airport_name")+")");
+                jsonArr.put(obj);
+            }
+
+        } catch (Exception e) {
+            System.err.println("ERROR: " + e);
+        }
+        return jsonArr.toString();
+    }
+    
+    public static String getFlights(String origin, String date) {
+        JSONArray jsonArr = new JSONArray();
+        String query = "SELECT hk_air.flight.flight_number, date, aircraft, flight_id, origin, destination, departure, arrival, base_rate"
+                + " FROM hk_air.flight, hk_air.service WHERE hk_air.flight.flight_number = "
+                + "hk_air.service.flight_number AND hk_air.service.origin = '"+origin+"' AND hk_air.flight.date = '"+date+"';";
+        try {
+            Statement st = c.createStatement();
+            ResultSet rs = st.executeQuery(query);
+            jsonArr = convert(rs);
+
+        } catch (Exception e) {
+            System.err.println("ERROR: " + e);
+        }
+        return jsonArr.toString();
+    }
+    
     public static JSONArray convert( ResultSet rs ) throws SQLException, JSONException {
     JSONArray json = new JSONArray();
     ResultSetMetaData rsmd = rs.getMetaData();
